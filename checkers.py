@@ -6,16 +6,31 @@ import os       #OS specific features such as clearing the terminsal
 import random   #For functions such as first move/AI
 
 #===Globals
-BOARD_WIDTH  = 8
-BOARD_HEIGHT = 8
-PLAYER1_ICON = "O"
-PLAYER2_ICON = "X"
+BOARD_WIDTH     = 8
+BOARD_HEIGHT    = 8
+PLAYER1_ICON    = "o"
+PLAYER1_BIGICON = "O"
+PLAYER2_ICON    = "x"
+PLAYER2_BIGICON = "X"
 
 #===Functions
 # gen_blank_matrix
 # Generates and returns a blank matrix of [Y][X] size
 def gen_blank_matrix(Y, X):
     return [[0] * Y for Z in range(X)]
+
+def isEven(number):
+    if number % 2 == 0:
+        return True
+    return False
+
+#butnotone
+def is_within_one(number1, number2):
+    match (number1 - number2):
+        case 0: return True
+        case 1: return True
+        case -1: return True
+    return False
 
 # set_game_board(game_board)
 # sets a checkers game board to the size of game_board
@@ -41,17 +56,21 @@ def game_draw(game_board):
 # checks if a move is a valid chess move.
 # TODO: Add king pieces
 def check_move_valid(x_origin, y_origin, x_dest, y_dest, game_board, team):
-    #check diagnal
-    if team == 1 and (((( x_dest == (x_origin + 1))or x_dest == (x_origin-1))) and (y_dest == (y_origin + 1))):
-        if not game_board[y_dest][x_dest] == team:
+    #Original Pieces Logic
+    if not isEven(team) and (((( x_dest == (x_origin + 1)) or x_dest == (x_origin-1))) and (y_dest == (y_origin + 1))):
+        if isEven(game_board[y_dest][x_dest]):
             return True
-    elif team == 1 and ((x_dest == x_origin) and ( y_dest == y_origin+1)) and game_board[y_dest][x_dest] == 2:
+    elif not isEven(team) and ((x_dest == x_origin) and ( y_dest == y_origin+1)) and isEven(game_board[y_dest][x_dest]) and not game_board[y_dest][x_dest] == 0 :#game_board[y_dest][x_dest] == 2:
         return True
-    if team == 2 and ((( x_dest == (x_origin + 1) or x_dest == (x_origin-1))) and (y_dest == (y_origin - 1))):
-        if not game_board[y_dest][x_dest] == team:
+    if isEven(team) and ((( x_dest == (x_origin + 1) or x_dest == (x_origin-1))) and (y_dest == (y_origin - 1))):
+        if not isEven(game_board[y_dest][x_dest]) or game_board[y_dest][x_dest] == 0:
             return True
-    elif team == 2 and ((x_dest == x_origin) and ( y_dest == y_origin-1)) and game_board[y_dest][x_dest] == 1:
+    elif isEven(team) and ((x_dest == x_origin) and ( y_dest == y_origin-1)) and not isEven(game_board[y_dest][x_dest]):#(game_board[y_dest][x_dest] == 1):
         return True
+    #King Logic
+    if ( team == 3 or team == 4 ) and is_within_one(x_origin, x_dest) and is_within_one(y_origin, y_dest) and not ( x_origin == x_dest and y_origin == y_dest ):
+        return True
+
     return False
 
 def draw_valid_board(x_origin, y_origin, game_board):
@@ -92,6 +111,12 @@ def draw_valid_board(x_origin, y_origin, game_board):
             elif game_board[y][x] == 2:
                 print(" ", end="")
                 print(PLAYER2_ICON, end=" ")
+            elif game_board[y][x] == 3:
+                print(" ", end="")
+                print(PLAYER1_BIGICON, end=" ")
+            elif game_board[y][x] == 4:
+                print(" ", end="")
+                print(PLAYER2_BIGICON, end=" ")
             else:
                 print(" E ", end="")
         print("┃")
@@ -118,11 +143,14 @@ def player_move(game_board, team):
         yo_sel = input("Enter y coordinate: ")
         xo_sel = int(xo_sel) - 1    #humans don't enter block 0
         yo_sel = int(yo_sel) - 1    #humans don't enter block 0
-        if game_board[yo_sel][xo_sel] == team:
+        if game_board[yo_sel][xo_sel] == 0:
+            pass
+        elif isEven(game_board[yo_sel][xo_sel]) == isEven(team):
             move_invalid = False
         else:
             print("Your piece is not in selected area.  Try again.")
 
+    team = game_board[yo_sel][xo_sel]
     draw_valid_board(xo_sel, yo_sel, game_board)
 
     move_invalid = True
@@ -140,6 +168,12 @@ def player_move(game_board, team):
             print("Invalid destination.  Try again.")
 
     game_board[yo_sel][xo_sel] = 0
+
+    if team == 1 and yd_sel == (BOARD_HEIGHT-1):
+        team = 3
+    elif team == 2 and yd_sel == 0:
+        team = 4
+
     game_board[yd_sel][xd_sel] = team
 
     return game_board
@@ -153,9 +187,11 @@ def check_winner(game_board):
 
     for y in range (0, len(game_board)):
         for x in range(0, len(game_board[y])):
-            if game_board[y][x] == 1:
+            if game_board[y][x] == 0:
+                pass    #don't count 0
+            elif not isEven(game_board[y][x]):
                 count_player1 = count_player1 + 1
-            elif game_board[y][x] == 2:
+            elif isEven(game_board[y][x]):
                 count_player2 = count_player2 + 1
 
     if count_player1 == 0:
@@ -174,4 +210,5 @@ while check_winner(game_board) == 0:
     game_draw(game_board)
     player_move(game_board, 2)
 
+game_draw(game_board)
 print("The winner is player: " + str(check_winner(game_board)))
