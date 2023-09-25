@@ -4,10 +4,11 @@
 #===Imports
 import os       #OS specific features such as clearing the terminsal
 import random   #For functions such as first move/AI
+from colorama import Fore, Back, Style
 
 #===Globals
-BOARD_WIDTH     = 8
-BOARD_HEIGHT    = 8
+BOARD_WIDTH     = 4
+BOARD_HEIGHT    = 4
 PLAYER1_ICON    = "o"
 PLAYER1_BIGICON = "O"
 PLAYER2_ICON    = "x"
@@ -85,16 +86,14 @@ def draw_valid_board(x_origin, y_origin, game_board):
         print("━" + str(c+1) + "━", end="")
     print("┓")
 
-    #blank line
-    print(" ┃ ", end="")
-    for x in range(0, BOARD_WIDTH):
-        print("   ", end="")
-    print("┃")
-
     #print the meat and potatoes
     for y in range(0, len(game_board)):
         print(" " + str(y+1), end = " ")
         for x in range(0, len(game_board[y])):
+            if (x+y) % 2:
+                print(Back.BLACK, end="")
+            else:
+                print(Back.WHITE, end="")
             if ( not x_origin == -1 ) and check_move_valid(x_origin, y_origin, x, y, game_board, team):
                 if game_board[y][x] == 0:
                     print(" M ", end = "")
@@ -102,29 +101,24 @@ def draw_valid_board(x_origin, y_origin, game_board):
                     print(" E ", end = "")
             elif game_board[y][x] == 0:
                 if (x+y) % 2:
-                    print(" ▒ ", end="")
+                    print("   ", end="")
                 else:
-                    print(" ▓ ", end="")
+                    print("   ", end="")
             elif game_board[y][x] == 1:
                 print(" ", end="")
-                print(PLAYER1_ICON, end=" ")
+                print(Fore.GREEN + PLAYER1_ICON, end=" ")
             elif game_board[y][x] == 2:
                 print(" ", end="")
-                print(PLAYER2_ICON, end=" ")
+                print(Fore.RED + PLAYER2_ICON, end=" ")
             elif game_board[y][x] == 3:
                 print(" ", end="")
-                print(PLAYER1_BIGICON, end=" ")
+                print(Fore.GREEN + PLAYER1_BIGICON, end=" ")
             elif game_board[y][x] == 4:
                 print(" ", end="")
-                print(PLAYER2_BIGICON, end=" ")
+                print(Fore.RED + PLAYER2_BIGICON, end=" ")
             else:
                 print(" E ", end="")
-        print("┃")
-
-        #blank line
-        print(" ┃ ", end="")
-        for x in range(0, len(game_board[y])):
-            print("   ", end="")
+            print(Style.RESET_ALL, end="")
         print("┃")
 
     #print the bottom of the board
